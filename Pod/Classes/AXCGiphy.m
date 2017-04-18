@@ -91,14 +91,14 @@ static NSString * kGiphyAPIKey;
     return gifArray;
 }
 
-+ (NSURLRequest *) giphySearchRequestForTerm:(NSString *) term limit:(NSUInteger) limit offset:(NSInteger) offset
++ (NSURLRequest *) giphySearchRequestForTerm:(NSString *) term limit:(NSUInteger) limit offset:(NSInteger) offset rating:(NSString *)rating
 {
-    return [self requestForEndPoint:@"/search" params:@{@"limit": @(limit), @"offset": @(offset), @"q": term}];
+    return [self requestForEndPoint:@"/search" params:@{@"limit": @(limit), @"offset": @(offset), @"q": term, @"rating": rating}];
 }
 
-+ (NSURLRequest *) giphyTrendingRequestWithLimit:(NSUInteger) limit offset:(NSUInteger) offset
++ (NSURLRequest *) giphyTrendingRequestWithLimit:(NSUInteger) limit offset:(NSUInteger) offset rating:(NSString *)rating
 {
-    return [self requestForEndPoint:@"/trending" params:@{@"limit": @(limit), @"offset": @(offset)}];
+    return [self requestForEndPoint:@"/trending" params:@{@"limit": @(limit), @"offset": @(offset), @"rating": rating}];
 }
 
 + (NSURLRequest *) giphyRequestForGIFWithID:(NSString *) ID
@@ -132,10 +132,10 @@ static NSString * kGiphyAPIKey;
     return request;
 }
 
-+ (NSURLSessionDataTask *) searchGiphyWithTerm:(NSString *) searchTerm limit:(NSUInteger) limit offset:(NSUInteger) offset completion:(void (^) (NSArray * results, NSError * error)) block
++ (NSURLSessionDataTask *) searchGiphyWithTerm:(NSString *) searchTerm limit:(NSUInteger) limit offset:(NSUInteger) offset rating:(NSString *)rating completion:(void (^) (NSArray * results, NSError * error)) block
 {
     NSURLSession * session = [NSURLSession sharedSession];
-    NSURLRequest * request = [self giphySearchRequestForTerm:searchTerm limit:limit offset:offset];
+    NSURLRequest * request = [self giphySearchRequestForTerm:searchTerm limit:limit offset:offset rating:rating];
     NSURLSessionDataTask * task = [session dataTaskWithRequest:request  completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         // network error
         if (error) {
@@ -157,10 +157,10 @@ static NSString * kGiphyAPIKey;
     return task;
 }
 
-+ (NSURLSessionDataTask *) trendingGIFsWithlimit:(NSUInteger) limit offset:(NSInteger) offset completion:(void (^) (NSArray * results, NSError * error)) block
++ (NSURLSessionDataTask *) trendingGIFsWithlimit:(NSUInteger) limit offset:(NSInteger) offset rating:(NSString *)rating completion:(void (^) (NSArray * results, NSError * error)) block
 {
     NSURLSession * session = [NSURLSession sharedSession];
-    NSURLRequest * request = [self giphyTrendingRequestWithLimit:limit offset:offset];
+    NSURLRequest * request = [self giphyTrendingRequestWithLimit:limit offset:offset rating:rating];
     NSURLSessionDataTask * task = [session dataTaskWithRequest:request  completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         // network error
         if (error) {

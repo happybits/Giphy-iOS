@@ -52,9 +52,9 @@ extern NSString * const kGiphyPublicAPIKey;
 /** Get your currently set Giphy API Key */
 + (NSString *) giphyAPIKey;
 /** NSURLRequest to search Giphy with term. You can limit results, with a max of 100. Returns 25 by default. Use offset with limit to paginate through results. */
-+ (NSURLRequest *) giphySearchRequestForTerm:(NSString *) term limit:(NSUInteger) limit offset:(NSInteger) offset;
++ (NSURLRequest *) giphySearchRequestForTerm:(NSString *) term limit:(NSUInteger) limit offset:(NSInteger) offset rating:(NSString *)rating;
 /** NSURLRequest to get trending GIFs. You can limit results, with a max of 100. Returns 25 by default. Use offset with limit to paginate through results. */
-+ (NSURLRequest *) giphyTrendingRequestWithLimit:(NSUInteger) limit offset:(NSUInteger) offset;
++ (NSURLRequest *) giphyTrendingRequestWithLimit:(NSUInteger) limit offset:(NSUInteger) offset rating:(NSString *)rating;
 /** NSURLRequest to fetch GIF with ID .*/
 + (NSURLRequest *) giphyRequestForGIFWithID:(NSString *) ID;
 /** NSURLRequest to fetch GIFs with IDs .*/
@@ -62,9 +62,9 @@ extern NSString * const kGiphyPublicAPIKey;
 /** NSURLRequest to translate term into a GIF.*/
 + (NSURLRequest *) giphyTranslationRequestForTerm:(NSString *) term;
 /** Search Giphy with term. You can limit results, with a max of 100. Returns 25 by default. Use offset with limit to paginate through results. Asynchronously returns either array of AXCGiphy objects or an error. */
-+ (NSURLSessionDataTask *) searchGiphyWithTerm:(NSString *) searchTerm limit:(NSUInteger) limit offset:(NSUInteger) offset completion:(void (^) (NSArray * results, NSError * error)) block;
++ (NSURLSessionDataTask *) searchGiphyWithTerm:(NSString *) searchTerm limit:(NSUInteger) limit offset:(NSUInteger) offset rating:(NSString *)rating completion:(void (^) (NSArray * results, NSError * error)) block;
 /** Get currently trending GIFs. You can limit results, with a max of 100. Returns 25 by default. Use offset with limit to paginate through results. Asynchronously returns either array of AXCGiphy objects or an error. */
-+ (NSURLSessionDataTask *) trendingGIFsWithlimit:(NSUInteger) limit offset:(NSInteger) offset completion:(void (^) (NSArray * results, NSError * error)) block;
++ (NSURLSessionDataTask *) trendingGIFsWithlimit:(NSUInteger) limit offset:(NSInteger) offset rating:(NSString *)rating completion:(void (^) (NSArray * results, NSError * error)) block;
 /** Fetch GIF with ID . Asynchronously returns either AXCGiphy object or an error.*/
 + (NSURLSessionDataTask *) gifForID:(NSString *) ID completion:(void (^) (AXCGiphy * result, NSError * error)) block;
 /** Fetch multiple GIFs by ID. Asynchronously returns either array of AXCGiphy objects or an error.*/
