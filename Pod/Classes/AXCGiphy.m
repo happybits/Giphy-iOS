@@ -7,13 +7,14 @@
 //
 //https://github.com/giphy/GiphyAPI
 #import "AXCGiphy.h"
-#import <AFNetworking/AFURLRequestSerialization.h>
 #import "AXCGiphyImage.h"
 #import "AXCGiphyImageDownsampled.h"
 #import "AXCGiphyImageFixed.h"
 #import "AXCGiphyImageOriginal.h"
 
 NSString * const kGiphyPublicAPIKey = @"dc6zaTOxFJmzC";
+
+#define QueryItem(_name, _value) [NSURLQueryItem queryItemWithName:(_name) value:(_value)]
 
 @interface AXCGiphy ()
 @property (readwrite, strong, nonatomic) NSString * gifID;
@@ -93,12 +94,21 @@ static NSString * kGiphyAPIKey;
 
 + (NSURLRequest *) giphySearchRequestForTerm:(NSString *) term limit:(NSUInteger) limit offset:(NSInteger) offset rating:(NSString *)rating
 {
-    return [self requestForEndPoint:@"/search" params:@{@"limit": @(limit), @"offset": @(offset), @"q": term, @"rating": rating}];
+    return [self requestForEndPoint:@"/search" params:@[
+        QueryItem(@"limit", [@(limit) stringValue]),
+        QueryItem(@"offset", [@(offset) stringValue]),
+        QueryItem(@"q", term),
+        QueryItem(@"rating", rating),
+    ]];
 }
 
 + (NSURLRequest *) giphyTrendingRequestWithLimit:(NSUInteger) limit offset:(NSUInteger) offset rating:(NSString *)rating
 {
-    return [self requestForEndPoint:@"/trending" params:@{@"limit": @(limit), @"offset": @(offset), @"rating": rating}];
+    return [self requestForEndPoint:@"/trending" params:@[
+        QueryItem(@"limit", [@(limit) stringValue]),
+        QueryItem(@"offset", [@(offset) stringValue]),
+        QueryItem(@"rating", rating),
+    ]];
 }
 
 + (NSURLRequest *) giphyRequestForGIFWithID:(NSString *) ID
@@ -107,28 +117,56 @@ static NSString * kGiphyAPIKey;
 }
 + (NSURLRequest *) giphyRequestForGIFsWithIDs:(NSArray *) IDs
 {
-    return [self requestForEndPoint:@"" params:@{@"ids": [IDs componentsJoinedByString:@","]}];
+    return [self requestForEndPoint:@"" params:@[
+        QueryItem(@"ids", [IDs componentsJoinedByString:@","]),
+    ]];
 }
 
 + (NSURLRequest *) giphyTranslationRequestForTerm:(NSString *) term
 {
-    return [self requestForEndPoint:@"/translate" params:@{@"limit": @(1), @"s": term}];
+    return [self requestForEndPoint:@"/translate" params:@[
+        QueryItem(@"limit", @"1"),
+        QueryItem(@"s", term),
+    ]];
 }
 /** Response on this endpoint is inconsistent with the rest of the endpoints' responses*/
 + (NSURLRequest *) giphyRequestForRandomGIFWithTag:(NSString *) tag
 {
-    return [self requestForEndPoint:@"/random" params:@{@"tag": tag}];
+    return [self requestForEndPoint:@"/random" params:@[
+        QueryItem(@"tag", tag),
+    ]];
 }
 
-+ (NSURLRequest *) requestForEndPoint:(NSString *) endpoint params:(NSDictionary *) params
+static NSString * UserAgent(void) {
+    static NSString *userAgent;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
+        userAgent = [NSString stringWithFormat:@"%@/%@ (%@; iOS %@; Scale/%0.2f)",
+         info[(NSString *)kCFBundleExecutableKey] ?: info[(NSString *)kCFBundleIdentifierKey],
+         info[@"CFBundleShortVersionString"] ?: info[(NSString *)kCFBundleVersionKey],
+         [[UIDevice currentDevice] model],
+         [[UIDevice currentDevice] systemVersion],
+         [[UIScreen mainScreen] scale]];
+    });
+    return userAgent;
+}
+
++ (NSURLRequest *) requestForEndPoint:(NSString *) endpoint params:(NSArray<NSURLQueryItem *> *) params
 {
-    NSString * base = @"http://api.giphy.com/v1/gifs";
-    NSString * withEndPoint = [NSString stringWithFormat:@"%@%@", base, endpoint];
-    NSError * error;
+    NSString *base = @"http://api.giphy.com/v1/gifs";
+    NSString *withEndPoint = [NSString stringWithFormat:@"%@%@", base, endpoint];
+    NSURLComponents *components = [NSURLComponents componentsWithString:withEndPoint];
+
+    NSMutableArray *queryItems = [components.queryItems mutableCopy] ?: [NSMutableArray new];
+    [queryItems addObject:[NSURLQueryItem queryItemWithName:@"api_key" value:kGiphyAPIKey]];
+    [queryItems addObjectsFromArray:params];
+    components.queryItems = queryItems;
     
-    NSMutableDictionary * paramsWithAPIKey = [NSMutableDictionary dictionaryWithDictionary:params];
-    [paramsWithAPIKey setObject:kGiphyAPIKey forKey:@"api_key"];
-    NSURLRequest * request =  [[AFHTTPRequestSerializer serializer] requestWithMethod:@"GET" URLString:withEndPoint parameters:paramsWithAPIKey error:&error];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:components.URL];
+    request.HTTPMethod = @"GET";
+    [request setValue:UserAgent() forHTTPHeaderField:@"User-Agent"];
+
     return request;
 }
 
