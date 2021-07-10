@@ -154,7 +154,7 @@ static NSString * UserAgent(void) {
 
 + (NSURLRequest *) requestForEndPoint:(NSString *) endpoint params:(NSArray<NSURLQueryItem *> *) params
 {
-    NSString *base = @"http://api.giphy.com/v1/gifs";
+    NSString *base = @"https://api.giphy.com/v1/gifs";
     NSString *withEndPoint = [NSString stringWithFormat:@"%@%@", base, endpoint];
     NSURLComponents *components = [NSURLComponents componentsWithString:withEndPoint];
 
